@@ -49,6 +49,12 @@ sys.excepthook = handle_exception
 
 #Setup the config
 class Config:
+    def load_variable(environ_name, alt_environ_name, config_value):
+        if alt_environ_name is not None and os.environ.get(alt_environ_name) is not None:
+            return os.environ.get(alt_environ_name)
+        if os.environ.get(environ_name) is not None:
+            return os.environ.get(environ_name)
+        return config_value
     def __init__(self):
         config = {}
         if os.path.exists(os.path.abspath('config.json')):
@@ -58,20 +64,15 @@ class Config:
             log_message("Make sure the config file exists.")
             
         #Overwrite that with the environment variables
-        config['webhook_port'] = os.environ.get('ICONBOT_WEBHOOK_PORT')
-        config['github']['secret'] = os.environ.get('ICONBOT_WEBHOOK_PORT')
-        config['github']['user'] = (os.environ.get('GITHUB_USER'),os.environ.get('ICONBOT_GITHUB_USER'))[os.environ.get('ICONBOT_GITHUB_USER') is not None]
-        config['github']['auth'] = (os.environ.get('GITHUB_AUTH'),os.environ.get('ICONBOT_GITHUB_AUTH'))[os.environ.get('ICONBOT_GITHUB_AUTH') is not None]
-        config['upload_api']['url'] = os.environ.get('PICTUREAPI_URL')
-        config['upload_api']['key'] = os.environ.get('PICTUREAPI_KEY')
-        config['ignore'] = os.environ.get('PICTUREAPI_KEY').split(',')
-        self.webhook_port = config['webhook_port']
-        self.github_secret = config['github']['secret'].encode('utf-8')
-        self.github_user = config['github']['user']
-        self.github_auth = config['github']['auth']
-        self.upload_api_url = config['upload_api']['url']
-        self.upload_api_key = config['upload_api']['key']
-        self.ignore_list = config['ignore'] 
+        if os.environ.get('ICONBOT_IGNORELIST') is not None:
+            config['ignore'] = os.environ.get('ICONBOT_IGNORELIST').split(',')
+        self.webhook_port = load_variable('ICONBOT_WEBHOOK_PORT', None, config['webhook_port'])
+        self.github_secret = load_variable('GITHUB_SECRET','ICONBOT_GITHUB_SECRET', config['github']['secret']).encode('utf-8')
+        self.github_user = load_variable('GITHUB_USER','ICONBOT_GITHUB_USER', config['github']['user'])
+        self.github_auth = load_variable('GITHUB_AUTH','ICONBOT_GITHUB_AUTH', config['github']['auth'])
+        self.upload_api_url = load_variable('UPLOADAPI_URL','UPLOADAPI_URL', config['upload_api']['url'])
+        self.upload_api_key = load_variable('UPLOADAPI_KEY','UPLOADAPI_KEY', config['upload_api']['key'])
+        self.ignore_list = config['ignore']
 
 config = Config()
 actions_to_check = ['opened', 'synchronize']
@@ -285,7 +286,7 @@ def get_debug_input():
 def bulk_prs():
     org = 'tgstation'
     repo = 'tgstation'
-    prs = []	
+    prs = []    
     with open('bulk_prs.txt') as f:
         prs = f.readlines()
     
