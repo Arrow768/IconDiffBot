@@ -274,10 +274,19 @@ def get_debug_input():
     test_pr(number, owner, repo, send_msg)
 
 def bulk_prs():
+	org = 'tgstation'
+	repo = 'tgstation'
     with open('bulk_prs.txt') as f:
         prs = f.readlines()
+	
+	# Check if the first line is a pr or a repo definition
+	if(' ' in prs[0])
+		org = prs[0].split()[0]
+		repo = prs[0].split()[1]
+		prs.pop(0)
+	
     for pr in prs:
-        test_pr(int(pr), 'tgstation', 'tgstation', True)
+        test_pr(int(pr), org, repo, True)
 
 def start_server():
     """Starts the webserver"""
