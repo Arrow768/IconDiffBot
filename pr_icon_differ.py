@@ -50,12 +50,21 @@ sys.excepthook = handle_exception
 #Setup the config
 class Config:
     def __init__(self):
-        config = {}
+        config = {}		
         if os.path.exists(os.path.abspath('config.json')):
             with open('config.json', 'r') as f:
                 config = json.load(f)
         else:
             log_message("Make sure the config file exists.")
+			
+		#Overwrite that with the environment variables
+		config['webhook_port'] = os.environ.get('ICONBOT_WEBHOOK_PORT')
+		config['github']['secret'] = os.environ.get('ICONBOT_WEBHOOK_PORT')
+		config['github']['user'] = (os.environ.get('GITHUB_USER'),os.environ.get('ICONBOT_GITHUB_USER'))[os.environ.get('ICONBOT_GITHUB_USER') is not None]
+		config['github']['auth'] = (os.environ.get('GITHUB_AUTH'),os.environ.get('ICONBOT_GITHUB_AUTH'))[os.environ.get('ICONBOT_GITHUB_AUTH') is not None]
+		config['upload_api']['url'] = os.environ.get('PICTUREAPI_URL')
+		config['upload_api']['key'] = os.environ.get('PICTUREAPI_KEY')
+		config['ignore'] = os.environ.get('PICTUREAPI_KEY').split(',')
         self.webhook_port = config['webhook_port']
         self.github_secret = config['github']['secret'].encode('utf-8')
         self.github_user = config['github']['user']
